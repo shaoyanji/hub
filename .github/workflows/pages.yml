@@ -1,47 +1,36 @@
 name: pages
 
-# The site is built here and published as a Pages artifact: the repository holds
-# the source, the artifact holds the rendered HTML, and nothing built is committed.
+# Pages serves the `gh-pages` branch, so this job builds the site and publishes
+# the rendered output there. The artifact-based deploy-pages path was tried
+# first and refused: the site was created by API with a source branch that did
+# not exist (`master`), and every deploy job failed against it. A branch Pages
+# already owns is one fewer moving part.
 on:
   push:
     branches: [main]
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
   group: pages
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
-  build:
+  publish:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - id: pages
-        uses: actions/configure-pages@v5
       - uses: peaceiris/actions-hugo@v3
         with:
           hugo-version: "0.147.0"
           extended: true
-      # `baseURL` comes from Pages, not from hugo.toml: the same source builds
-      # under github.io/<repo>/ now and under a custom domain later without a
-      # second edit, and a relative baseURL would break the canonical links.
       - name: Build
-        run: hugo --minify --baseURL "${{ steps.pages.outputs.base_url }}/"
-      - uses: actions/upload-pages-artifact@v3
+        run: hugo --minify --baseURL "https://shaoyanji.github.io/hub/"
+      - uses: peaceiris/actions-gh-pages@v4
         with:
-          path: ./public
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
+          publish_branch: gh-pages
+          force_orphan: true
