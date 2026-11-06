@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Index on Shaoyan Ji</title><link>https://shaoyanji.github.io/hub/</link><description>Recent content in Index on Shaoyan Ji</description><generator>Hugo</generator><language>en</language><atom:link href="https://shaoyanji.github.io/hub/index.xml" rel="self" type="application/rss+xml"/><item><title>About</title><link>https://shaoyanji.github.io/hub/about/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://shaoyanji.github.io/hub/about/</guid><description>&lt;p>This is an index, not a blog. The posts live where they were written:&lt;/p>
+&lt;ul>
+&lt;li>&lt;strong>dev log&lt;/strong> — &lt;a href="https://shaoyanji.is-a.dev">https://shaoyanji.is-a.dev&lt;/a>, notes on infrastructure and tooling.&lt;/li>
+&lt;li>&lt;strong>mataroa&lt;/strong> — &lt;a href="https://jisifu.mataroa.blog">https://jisifu.mataroa.blog&lt;/a>, longer pieces.&lt;/li>
+&lt;li>&lt;strong>envs.net&lt;/strong> — &lt;a href="https://jisifu.envs.net">https://jisifu.envs.net&lt;/a>, a shell page and twtxt.&lt;/li>
+&lt;li>&lt;strong>serv00&lt;/strong> — &lt;a href="https://jisifu.serv00.net">https://jisifu.serv00.net&lt;/a>, FreeBSD experiments.&lt;/li>
+&lt;li>&lt;strong>dragoncourt&lt;/strong> — &lt;a href="https://dragoncourt.alwaysdata.net">https://dragoncourt.alwaysdata.net&lt;/a>, PHP and Wasm on shared hosting.&lt;/li>
+&lt;/ul>
+&lt;p>The repositories are on &lt;a href="https://github.com/shaoyanji">GitHub&lt;/a>. Mail:
+&lt;a href="mailto:mail@shaoyanji.is-a.dev">mail@shaoyanji.is-a.dev&lt;/a>.&lt;/p>
+&lt;p>Everything here is built with &lt;a href="https://gohugo.io">Hugo&lt;/a> and published by a
+GitHub Actions workflow on every push to &lt;code>main&lt;/code>. The recent-writing list is read
+from the sources&amp;rsquo; feeds at build time, so this page cannot drift from them.&lt;/p></description></item></channel></rss>
