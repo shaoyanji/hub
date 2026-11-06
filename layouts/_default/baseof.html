@@ -20,10 +20,12 @@
   </head>
   <body>
     <header class="site">
-      <a class="brand" href="{{ "/" | relURL }}">{{ site.Title }}</a>
+      {{/* relLangURL, not relURL: the site is published under /hub/, and a
+           root-relative "/about/" would leave it. */}}
+      <a class="brand" href="{{ site.Home.RelPermalink }}">{{ site.Title }}</a>
       <nav>
         {{ range site.Menus.main }}
-          <a href="{{ .URL }}">{{ .Name }}</a>
+          <a href="{{ .URL | relLangURL }}">{{ .Name }}</a>
         {{ end }}
         <a href="https://github.com/{{ site.Params.projectsUser }}">github</a>
       </nav>
