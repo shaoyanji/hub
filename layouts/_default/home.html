@@ -1,0 +1,106 @@
+{{ define "main" }}
+  <section class="intro">
+    {{ .Content }}
+  </section>
+
+  <section class="properties">
+    <h2>where it lives</h2>
+    <ul class="cards">
+      {{ range site.Data.properties }}
+        <li class="card">
+          <a href="{{ .url }}">
+            <span class="card-name">{{ .name }}</span>
+            <span class="card-kind">{{ .kind }}</span>
+          </a>
+          <p>{{ .blurb }}</p>
+          <span class="host">{{ (urls.Parse .url).Host }}</span>
+        </li>
+      {{ end }}
+    </ul>
+  </section>
+
+  {{/* Recent writing is read from the sources at build time: a hand-kept list of
+       posts would be stale the day after it was written. Each feed is tried
+       independently, so one dead source costs its own section and nothing else. */}}
+  {{ $posts := slice }}
+  {{ range site.Params.feeds }}
+    {{ $feed := . }}
+    {{ with try (resources.GetRemote $feed.url) }}
+      {{ with .Err }}
+        {{ warnf "feed %s unreachable: %s" $feed.url . }}
+      {{ else }}
+        {{ $rss := .Value | transform.Unmarshal }}
+        {{ with $rss.channel }}
+          {{ $items := .item }}
+          {{ if not (reflect.IsSlice $items) }}
+            {{ $items = slice $items }}
+          {{ end }}
+          {{ range first 8 $items }}
+            {{ $item := . }}
+            {{ with $item.title }}
+              {{ $when := time.AsTime ($item.pubDate | default "2000-01-01T00:00:00Z") }}
+              {{ $posts = $posts | append (dict
+                "title" $item.title
+                "link" ($item.link | default $feed.url)
+                "source" $feed.label
+                "date" $when)
+              }}
+            {{ end }}
+          {{ end }}
+        {{ end }}
+      {{ end }}
+    {{ end }}
+  {{ end }}
+
+  <section class="writing">
+    <h2>recent writing</h2>
+    {{ if $posts }}
+      <ul class="list">
+        {{ range first 8 (sort $posts "date" "desc") }}
+          <li>
+            <a href="{{ .link }}">{{ .title }}</a>
+            <span class="meta">{{ .date.Format "2006-01-02" }} · {{ .source }}</span>
+          </li>
+        {{ end }}
+      </ul>
+    {{ else }}
+      <p class="muted">The feeds did not answer at build time. <a href="https://jisifu.mataroa.blog">mataroa</a> has them.</p>
+    {{ end }}
+  </section>
+
+  {{/* Public repositories, sorted by last push by the API itself. Forks and the
+       site's own repo are dropped: they are copies and this page respectively. */}}
+  {{ $api := printf "https://api.github.com/users/%s/repos?sort=pushed&per_page=100" site.Params.projectsUser }}
+  {{ $repos := slice }}
+  {{ with try (resources.GetRemote $api) }}
+    {{ with .Err }}
+      {{ warnf "github api unreachable: %s" . }}
+    {{ else }}
+      {{ range .Value | transform.Unmarshal }}
+        {{ if and (not .fork) (not .archived) (ne .name "hub") }}
+          {{ $repos = $repos | append . }}
+        {{ end }}
+      {{ end }}
+    {{ end }}
+  {{ end }}
+
+  <section class="projects">
+    <h2>built</h2>
+    {{ if $repos }}
+      <ul class="list projects-list">
+        {{ range first site.Params.projectsLimit $repos }}
+          <li>
+            <a href="{{ .html_url }}">{{ .name }}</a>
+            {{ with .description }}<span class="desc">{{ . }}</span>{{ end }}
+            <span class="meta">
+              {{ with .language }}{{ . }}{{ end }}
+              {{ if gt .stargazers_count 0 }} · {{ .stargazers_count }}★{{ end }}
+            </span>
+          </li>
+        {{ end }}
+      </ul>
+    {{ else }}
+      <p class="muted">The GitHub API did not answer at build time — see <a href="https://github.com/{{ site.Params.projectsUser }}">github.com/{{ site.Params.projectsUser }}</a>.</p>
+    {{ end }}
+  </section>
+{{ end }}
