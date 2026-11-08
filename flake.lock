@@ -56,11 +56,11 @@
         "nixpkgs": "nixpkgs_2"
       },
       "locked": {
-        "lastModified": 1794128043,
-        "narHash": "sha256-tgi8TY7lFibEpN7lK4GuSetLpMzarNJ4otNIF2Qd8V8=",
+        "lastModified": 1794128727,
+        "narHash": "sha256-J/TvYNAqvEL6c0VJPlCljMrIE2q63FKJIN0Z++izcgQ=",
         "owner": "shaoyanji",
         "repo": "nixstix",
-        "rev": "160f1aa66b0822bf7e975dcd149f8d8a62ac77fd",
+        "rev": "5764cf18fe1786c1c9636b3c19e73da0a6cbcd19",
         "type": "github"
       },
       "original": {

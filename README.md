@@ -30,14 +30,17 @@ build.
 | :--- | :--- |
 | title, description, mail, subpath, feed list, limits | `data/site.toml` |
 | the five places the writing lives | `data/properties.toml` |
-| the pages and their nav order | `site/pages/*.nix` |
+| the pages and their nav order | frontmatter in `content/*.md`; the home page is `site/pages/home.nix` |
 | the chrome (header, nav slot, footer) | `site/layout.nix` |
+| the stylesheet path | `site/theme.nix` |
 | prose | `content/*.md` |
 | style | `assets/css/style.css` |
 
-Adding a property is one row in `data/properties.toml`. Adding a page is one file
-in `site/pages/` plus one line in `flake.nix`; the nav picks it up from
-`navLabel` / `navOrder`.
+Adding a property is one row in `data/properties.toml`. Adding a page is one
+markdown file in `content/`: the path is the route, and its frontmatter supplies
+the title, description and nav placement. `content/about.md` is a page that way
+with no module at all. A page that needs markup of its own stays a module under
+`site/pages/` and one line in `flake.nix` — that is why the home page is one.
 
 ## Checks
 
@@ -50,8 +53,9 @@ A static site cannot report a dead link at runtime, so the build gate does:
 - `checks.site` — the site builds.
 - `checks.links` — `nixstix.lib.site.checkLinks` walks every root-relative `href`
   in the output and fails on one that names no file, or one that leaves `/hub`.
-- `checks.routes` — `/`, `/about/` and the stylesheet exist, and their markers are
-  the ones the pages declare.
+- `checks.routes` — `/`, `/about/` and the stylesheet exist, their markers are the
+  ones the pages declare, and `content/_index.md` is not routed (a `_` file is a
+  partial, not a page).
 
 `pages.yml` runs the same check after refreshing the live sources, so a broken
 `/hub/` link fails the deploy instead of being published.

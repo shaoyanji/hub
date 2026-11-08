@@ -17,34 +17,51 @@
             basePath = config.basePath;
             site = config;
           };
-          site =
+          # The chrome, and the stylesheet path it loads, for the content step.
+          chrome = import ./site/layout.nix pageArgs;
+          theme = import ./site/theme.nix;
+
+          # The content step wraps a markdown body in a page of its own, so the
+          # layout hands back the body of the chrome page it builds.
+          contentLayout = { page, content, ... }:
+            (chrome {
+              inherit (page) title route description navLabel navOrder;
+              inner = [ (lib.dsl.el "article" { } [ content ]) ];
+            }).body;
+
+          built =
             lib.site.buildSite {
               name = "hub";
               basePath = config.basePath;
-              pages = [
-                (import ./site/pages/home.nix pageArgs)
-                (import ./site/pages/about.nix pageArgs)
-              ];
+              pages = [ (import ./site/pages/home.nix pageArgs) ]
+                ++ lib.content.pages {
+                  dir = ./content;
+                  site = config;
+                  layout = contentLayout;
+                  head = [ (lib.dsl.stylesheet theme.stylesheetHref) ];
+                };
               assets = [ ./assets ];
             };
         in
         {
-          packages.site = site;
+          packages.site = built;
 
           # A static site cannot surface a dead link at runtime, so the build
           # gate is where it fails: every root-relative href must name a file in
           # the output, and must stay under the published subpath.
           checks = {
-            site = site;
-            links = lib.site.checkLinks { name = "hub"; basePath = config.basePath; } site;
+            site = built;
+            links = lib.site.checkLinks { name = "hub"; basePath = config.basePath; } built;
             routes = pkgs.runCommand "hub-routes" { } ''
-              test -f ${site}/index.html
-              test -f ${site}/about/index.html
-              test -f ${site}/assets/css/style.css
-              grep -q '<title>${config.title}</title>' ${site}/index.html
-              grep -q '<h1>About</h1>' ${site}/about/index.html
-              grep -q 'href="/hub/about/"' ${site}/index.html
-              grep -q 'href="/hub/assets/css/style.css"' ${site}/index.html
+              test -f ${built}/index.html
+              test -f ${built}/about/index.html
+              test -f ${built}/assets/css/style.css
+              grep -q '<title>${config.title}</title>' ${built}/index.html
+              grep -q '<h1>About</h1>' ${built}/about/index.html
+              grep -q 'href="/hub/about/"' ${built}/index.html
+              grep -q 'href="/hub/assets/css/style.css"' ${built}/index.html
+              # content/_index.md is a partial for the home page, not a route.
+              test ! -e ${built}/_index/index.html
               touch $out
             '';
           };

@@ -13,12 +13,13 @@
   inner,
 }:
 let
-  inherit (lib.dsl) el text page stylesheet nav;
+  inherit (lib.dsl) el nav page stylesheet text;
+  theme = import ./theme.nix;
 in
 page {
   inherit title route description navLabel navOrder;
   lang = "en";
-  head = [ (stylesheet "/assets/css/style.css") ];
+  head = [ (stylesheet theme.stylesheetHref) ];
   body = [
     (el "header" { class = "site"; } [
       (el "a" { class = "brand"; href = "${basePath}/"; } [ (text site.title) ])
