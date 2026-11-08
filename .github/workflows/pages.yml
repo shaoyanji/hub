@@ -26,6 +26,10 @@ jobs:
             experimental-features = nix-command flakes
       - name: Read the live sources
         run: python3 scripts/fetch-data.py
+      # The gate: every root-relative href must name a file in the output and
+      # stay under /hub. A dead link fails here, before anything is published.
+      - name: Check
+        run: nix flake check
       - name: Build
         run: nix build .#site --print-out-paths
       - uses: peaceiris/actions-gh-pages@v4

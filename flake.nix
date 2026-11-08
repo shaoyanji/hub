@@ -17,9 +17,7 @@
             basePath = config.basePath;
             site = config;
           };
-        in
-        {
-          packages.site =
+          site =
             lib.site.buildSite {
               name = "hub";
               basePath = config.basePath;
@@ -29,6 +27,27 @@
               ];
               assets = [ ./assets ];
             };
+        in
+        {
+          packages.site = site;
+
+          # A static site cannot surface a dead link at runtime, so the build
+          # gate is where it fails: every root-relative href must name a file in
+          # the output, and must stay under the published subpath.
+          checks = {
+            site = site;
+            links = lib.site.checkLinks { name = "hub"; basePath = config.basePath; } site;
+            routes = pkgs.runCommand "hub-routes" { } ''
+              test -f ${site}/index.html
+              test -f ${site}/about/index.html
+              test -f ${site}/assets/css/style.css
+              grep -q '<title>${config.title}</title>' ${site}/index.html
+              grep -q '<h1>About</h1>' ${site}/about/index.html
+              grep -q 'href="/hub/about/"' ${site}/index.html
+              grep -q 'href="/hub/assets/css/style.css"' ${site}/index.html
+              touch $out
+            '';
+          };
 
           devShells.default = pkgs.mkShell {
             packages = [ pkgs.jq pkgs.python3 pkgs.nixpkgs-fmt ];
@@ -43,6 +62,10 @@
       devShells = builtins.listToAttrs (map (s: {
         name = s;
         value = (forSystem s).devShells;
+      }) systems);
+      checks = builtins.listToAttrs (map (s: {
+        name = s;
+        value = (forSystem s).checks;
       }) systems);
     };
 }

@@ -39,6 +39,23 @@ Adding a property is one row in `data/properties.toml`. Adding a page is one fil
 in `site/pages/` plus one line in `flake.nix`; the nav picks it up from
 `navLabel` / `navOrder`.
 
+## Checks
+
+```bash
+nix flake check
+```
+
+A static site cannot report a dead link at runtime, so the build gate does:
+
+- `checks.site` — the site builds.
+- `checks.links` — `nixstix.lib.site.checkLinks` walks every root-relative `href`
+  in the output and fails on one that names no file, or one that leaves `/hub`.
+- `checks.routes` — `/`, `/about/` and the stylesheet exist, and their markers are
+  the ones the pages declare.
+
+`pages.yml` runs the same check after refreshing the live sources, so a broken
+`/hub/` link fails the deploy instead of being published.
+
 ## Local build
 
 ```bash
