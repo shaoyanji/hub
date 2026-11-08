@@ -1,0 +1,32 @@
+# One row per place the writing lives: the index renders from here, so a
+# new property is one edit and no page change.
+
+[[properties]]
+name = "dev log"
+url = "https://shaoyanji.is-a.dev"
+blurb = "Notes on infrastructure, agents and the tooling around them."
+kind = "jekyll"
+
+[[properties]]
+name = "mataroa"
+url = "https://jisifu.mataroa.blog"
+blurb = "Longer pieces, written to be read once and kept."
+kind = "blog"
+
+[[properties]]
+name = "envs.net"
+url = "https://jisifu.envs.net"
+blurb = "A shell account page, plus twtxt for the small thoughts."
+kind = "shell"
+
+[[properties]]
+name = "serv00"
+url = "https://jisifu.serv00.net"
+blurb = "The FreeBSD corner — experiments that need a different libc."
+kind = "freebsd"
+
+[[properties]]
+name = "dragoncourt"
+url = "https://dragoncourt.alwaysdata.net"
+blurb = "PHP and Wasm experiments on shared Debian hosting."
+kind = "alwaysdata"

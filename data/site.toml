@@ -1,0 +1,17 @@
+# One home for the site's own facts. Pages read this through nixstix's data
+# helpers, so a title or a feed is edited here and nowhere else.
+title = "Shaoyan Ji"
+description = "An index of the writing and the things I build, kept in one place."
+author = "Shaoyan Ji"
+email = "mail@shaoyanji.is-a.dev"
+baseUrl = "https://shaoyanji.github.io/hub"
+basePath = "/hub"
+projectsUser = "shaoyanji"
+projectsLimit = 9
+recentLimit = 8
+
+# Read by scripts/fetch-data.py; a source that is down costs its own section.
+[[feeds]]
+name = "mataroa"
+label = "mataroa"
+url = "https://jisifu.mataroa.blog/rss/"

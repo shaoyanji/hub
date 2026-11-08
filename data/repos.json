@@ -1,0 +1,65 @@
+[
+  {
+    "name": "nixstix",
+    "url": "https://github.com/shaoyanji/nixstix",
+    "description": "Static Site Generated Readme2Site with Nix",
+    "language": "Nix",
+    "stars": 0
+  },
+  {
+    "name": "nixconfig",
+    "url": "https://github.com/shaoyanji/nixconfig",
+    "description": "My Nix Configurations for darwin, nixos, home-manager, and WSL",
+    "language": "Nix",
+    "stars": 2
+  },
+  {
+    "name": "chatplayground-go",
+    "url": "https://github.com/shaoyanji/chatplayground-go",
+    "description": "",
+    "language": "Go",
+    "stars": 0
+  },
+  {
+    "name": "deutsch-srs",
+    "url": "https://github.com/shaoyanji/deutsch-srs",
+    "description": "",
+    "language": "Go",
+    "stars": 0
+  },
+  {
+    "name": "shaoyanji.github.io",
+    "url": "https://github.com/shaoyanji/shaoyanji.github.io",
+    "description": "Site-map static site gen from scratch",
+    "language": "JavaScript",
+    "stars": 0
+  },
+  {
+    "name": "pancakes-harness",
+    "url": "https://github.com/shaoyanji/pancakes-harness",
+    "description": "",
+    "language": "Go",
+    "stars": 0
+  },
+  {
+    "name": "pythonanywhere",
+    "url": "https://github.com/shaoyanji/pythonanywhere",
+    "description": "",
+    "language": "Python",
+    "stars": 0
+  },
+  {
+    "name": "nix-build-tracker",
+    "url": "https://github.com/shaoyanji/nix-build-tracker",
+    "description": "Record NixOS configuration hashes and git commits on an always-free AWS stack",
+    "language": "Shell",
+    "stars": 0
+  },
+  {
+    "name": "neocities-dragoncourt",
+    "url": "https://github.com/shaoyanji/neocities-dragoncourt",
+    "description": "dragoncourt.neocities.org — hand-written cyberpunk blog, published through the Neocities API",
+    "language": "HTML",
+    "stars": 0
+  }
+]

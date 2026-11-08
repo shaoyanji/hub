@@ -1,8 +1,3 @@
-+++
-title = "About"
-description = "Who writes here, and where the rest of it is."
-+++
-
 This is an index, not a blog. The posts live where they were written:
 
 - **dev log** — <https://shaoyanji.is-a.dev>, notes on infrastructure and tooling.
