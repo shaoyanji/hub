@@ -21,8 +21,11 @@ the build by `scripts/fetch-data.py`:
 
 The script writes `data/feeds.json` and `data/repos.json`; both are committed so a
 fresh clone builds, and `pages.yml` refreshes them on every deploy. A source that
-is down writes an empty list: its section renders as a link, never as a failed
-build.
+does not answer keeps the committed copy and annotates the run, so a rate limit or
+an outage cannot publish an empty section; only a source with no committed copy
+renders as a link to itself. In CI the repo listing is read with the workflow
+token, because the unauthenticated 60-per-hour limit is shared by every job on the
+runner's address.
 
 ## Where a fact lives
 
@@ -64,12 +67,20 @@ A static site cannot report a dead link at runtime, so the build gate does:
 
 ```bash
 python3 scripts/fetch-data.py   # refresh the two live sources
-nix build .#site                # -> ./result
-python3 -m http.server -d result 8000   # view it (links are /hub/…)
+nix run .                       # serve the build under /hub on 127.0.0.1:8000
 ```
 
 `/hub/` is the published subpath (`basePath` in `data/site.toml`); links are
-prefixed with it so GitHub project Pages serves them.
+prefixed with it so GitHub project Pages serves them. That is why the preview is
+`nix run .` and not a plain `http.server -d result`: serving the output at `/`
+would 404 its own absolute links. `PORT` overrides 8000.
 
-Publishing is `.github/workflows/pages.yml` — fetch, build, upload the built
-directory to the `gh-pages` branch. Nothing built is committed.
+Publishing is `.github/workflows/pages.yml` — fetch, gate, build, upload the built
+directory as a Pages artifact, deploy it. Nothing built is committed, and no
+branch is force-pushed: Pages serves the artifact (`build_type: workflow`).
+
+The last step is a proof, not a formality: upload and deploy can both succeed while
+the address still serves the previous build, so it compares the served
+`index.html` to the built one (retrying while the CDN catches up) and fails the run
+if they never match. The Nix store is cached across runs, keyed on `flake.lock`,
+so a run re-downloads cmark, lynx and python only when a pin moves.

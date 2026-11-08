@@ -66,6 +66,22 @@
             '';
           };
 
+          # `nix run .` serves the artifact Pages serves, under the same
+          # subpath: the output's links are absolute (/hub/...), so serving it
+          # at / would 404 every one of them.
+          apps.default = {
+            type = "app";
+            program = "${pkgs.writeShellScript "hub-preview" ''
+              set -eu
+              root=$(mktemp -d)
+              trap 'rm -rf "$root"' EXIT INT TERM
+              ln -s ${built} "$root${config.basePath}"
+              ${pkgs.python3}/bin/python3 -m http.server --bind 127.0.0.1 "''${PORT:-8000}" --directory "$root" &
+              wait $!
+            ''}";
+            meta.description = "Serve the built site under ${config.basePath} on 127.0.0.1 (PORT overrides 8000)";
+          };
+
           devShells.default = pkgs.mkShell {
             packages = [ pkgs.jq pkgs.python3 pkgs.nixpkgs-fmt ];
           };
@@ -79,6 +95,10 @@
       devShells = builtins.listToAttrs (map (s: {
         name = s;
         value = (forSystem s).devShells;
+      }) systems);
+      apps = builtins.listToAttrs (map (s: {
+        name = s;
+        value = (forSystem s).apps;
       }) systems);
       checks = builtins.listToAttrs (map (s: {
         name = s;

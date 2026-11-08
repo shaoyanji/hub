@@ -1,40 +1,100 @@
 name: pages
 
-# Pages serves the `gh-pages` branch, so this job builds the site and publishes
-# the rendered output there. The build is `nix build .#site` (nixstix); the two
-# live sources are read first, because a Nix build reads no network.
+# Pages serves the artifact this job uploads (`build_type: workflow`), not a
+# branch. One pipeline per push: the build, the gate, the upload and the deploy
+# all run here, and the last step proves the live site is this build.
+#
+# The build reads no network, so the two live sources are read first.
 on:
   push:
     branches: [main]
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
+  pages: write
+  id-token: write
 
+# A deploy in flight is not cancelled: the queued one supersedes it, and Pages
+# keeps serving the previous artifact until the new one lands.
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   publish:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+
       - uses: cachix/install-nix-action@v27
         with:
           extra_nix_config: |
             experimental-features = nix-command flakes
+
+      # Keyed on the lockfile: the site derivation changes whenever the fetched
+      # data changes, but the toolchain behind it (cmark-gfm, lynx, python) only
+      # moves when a pin moves. The cap keeps the cached store small enough to
+      # restore quickly; entries fall out oldest-first as new sites are added.
+      - name: Cache the Nix store
+        uses: nix-community/cache-nix-action@v6
+        with:
+          primary-key: nix-${{ runner.os }}-${{ hashFiles('**/flake.lock') }}
+          restore-prefixes-first-match: nix-${{ runner.os }}-
+          gc-max-store-size-linux: 2G
+
       - name: Read the live sources
+        env:
+          # The token is what keeps the repo listing from hitting the 60-per-hour
+          # unauthenticated limit on a shared runner address; a rate-limited
+          # refresh would otherwise deploy a page with an empty "built" section.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python3 scripts/fetch-data.py
+
       # The gate: every root-relative href must name a file in the output and
       # stay under /hub. A dead link fails here, before anything is published.
       - name: Check
         run: nix flake check
+
       - name: Build
-        run: nix build .#site --print-out-paths
-      - uses: peaceiris/actions-gh-pages@v4
+        id: build
+        run: echo "path=$(nix build .#site --print-out-paths --no-link)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-pages-artifact@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./result
-          publish_branch: gh-pages
-          force_orphan: true
+          path: ${{ steps.build.outputs.path }}
+
+      - name: Deploy
+        id: deploy
+        uses: actions/deploy-pages@v4
+        with:
+          timeout: 300000
+
+      # Upload and deploy are two steps that can both succeed while the address
+      # still serves the previous build. This compares the served bytes to the
+      # built file, so "published" means the artifact is what a reader gets.
+      - name: Prove the deploy is live
+        env:
+          PAGE_URL: ${{ steps.deploy.outputs.page_url }}
+          OUT: ${{ steps.build.outputs.path }}
+        run: |
+          set -euo pipefail
+          base="${PAGE_URL%/}"
+          want=$(sha256sum "$OUT/index.html" | cut -d' ' -f1)
+          got=""
+          for _ in $(seq 1 30); do
+            got=$(curl -fsS --compressed "$base/" | sha256sum | cut -d' ' -f1 || true)
+            if [ "$got" = "$want" ]; then
+              for route in about/ assets/css/style.css; do
+                curl -fsS -o /dev/null "$base/$route"
+              done
+              echo "$base/ serves $OUT"
+              exit 0
+            fi
+            sleep 4
+          done
+          echo "Pages never served this build: want $want, got ${got:-nothing}" >&2
+          exit 1
