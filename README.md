@@ -82,5 +82,11 @@ branch is force-pushed: Pages serves the artifact (`build_type: workflow`).
 The last step is a proof, not a formality: upload and deploy can both succeed while
 the address still serves the previous build, so it compares the served
 `index.html` to the built one (retrying while the CDN catches up) and fails the run
-if they never match. The Nix store is cached across runs, keyed on `flake.lock`,
-so a run re-downloads cmark, lynx and python only when a pin moves.
+if they never match.
+
+The store is **not** cached between runs, and that is measured rather than
+assumed: with `cache-nix-action` keyed on `flake.lock`, a second run spent 28 s
+unpacking a 169 MB archive, failed 2429 writes to root-owned store paths, and then
+fetched and built the same derivations anyway — 65 s against 53 s without it. The
+toolchain already comes from `cache.nixos.org`, and the site derivation changes
+whenever the data does, so a store cache can only add time to this pipeline.

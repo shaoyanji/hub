@@ -35,16 +35,13 @@ jobs:
           extra_nix_config: |
             experimental-features = nix-command flakes
 
-      # Keyed on the lockfile: the site derivation changes whenever the fetched
-      # data changes, but the toolchain behind it (cmark-gfm, lynx, python) only
-      # moves when a pin moves. The cap keeps the cached store small enough to
-      # restore quickly; entries fall out oldest-first as new sites are added.
-      - name: Cache the Nix store
-        uses: nix-community/cache-nix-action@v6
-        with:
-          primary-key: nix-${{ runner.os }}-${{ hashFiles('**/flake.lock') }}
-          restore-prefixes-first-match: nix-${{ runner.os }}-
-          gc-max-store-size-linux: 2G
+      # No store cache between runs, deliberately. Measured on 2026-11-08 with
+      # cache-nix-action keyed on flake.lock: the restore spent 28 s unpacking
+      # 169 MB and then hit 2429 "Permission denied" writes to root-owned store
+      # paths, after which the run fetched and built exactly what it would have
+      # without it (65 s against 53 s). The toolchain is already substitutable
+      # from cache.nixos.org, and the site derivation changes with the data, so
+      # a cache can only add time here.
 
       - name: Read the live sources
         env:
