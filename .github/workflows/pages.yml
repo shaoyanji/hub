@@ -9,6 +9,11 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  # The header's "recently pushed" and "latest writing" sections are read from
+  # GitHub at deploy time, so without a schedule they freeze until the next
+  # commit. Monday morning is enough for a page nobody polls.
+  schedule:
+    - cron: "17 6 * * 1"
 
 permissions:
   contents: read
