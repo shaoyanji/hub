@@ -1,5 +1,7 @@
 # hub
 
+![hub: an index card fanning out to document spines and repository blocks](https://res.cloudinary.com/de1eajx01/image/upload/f_auto,q_auto,w_1200/assets/repos/hub)
+
 An index of the writing, in one place: the five homes it lives in, the posts as
 they are published, and the repositories behind them.
 
